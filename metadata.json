@@ -1,0 +1,6 @@
+{
+  "name": "Calendrier Éditorial Intelligent",
+  "description": "Assistant de planification éditoriale intelligent pour équipes marketing avec optimisation de copywriting par l'IA et analyse de performance.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
