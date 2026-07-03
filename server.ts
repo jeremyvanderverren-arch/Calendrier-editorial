@@ -12,15 +12,25 @@ app.use(express.json());
 
 const PORT = 3000;
 
-// Initialize Gemini Client
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
+// Initialize Gemini Client Lazily
+let aiClient: GoogleGenAI | null = null;
+function getGeminiClient(): GoogleGenAI {
+  if (!aiClient) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY environment variable is required.");
     }
+    aiClient = new GoogleGenAI({
+      apiKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        }
+      }
+    });
   }
-});
+  return aiClient;
+}
 
 // Helper: safe JSON parsing
 function safeJsonParse(text: string) {
@@ -54,6 +64,7 @@ Pour chaque publication, génère les champs suivants :
 
 Retourne ABSOLUMENT un tableau d'objets JSON valides décrivant ces publications.`;
 
+    const ai = getGeminiClient();
     const response = await ai.models.generateContent({
       model: "gemini-3.5-flash",
       contents: `Voici les idées brutes de l'utilisateur :\n"${rawInput}"`,
@@ -110,6 +121,7 @@ Public cible (Persona) : ${persona || "Professionnels"}
 Texte original à optimiser :
 "${copywriting}"`;
 
+    const ai = getGeminiClient();
     const response = await ai.models.generateContent({
       model: "gemini-3.5-flash",
       contents: userMessage,
@@ -146,6 +158,7 @@ Retourne une liste d'alertes au format JSON. Chaque alerte doit posséder :
 - suggestion : ce que le marketeur doit faire pour résoudre le problème.
 - publicationId : l'identifiant (id) de la publication affectée (si applicable).`;
 
+    const ai = getGeminiClient();
     const response = await ai.models.generateContent({
       model: "gemini-3.5-flash",
       contents: `Voici le calendrier éditorial actuel au format JSON :\n${JSON.stringify(publications)}`,
